@@ -1,6 +1,6 @@
 # lesson: explainer videos made with threepp
 
-`lesson.py` is a small toolkit for YouTube-style teaching clips. Nine lessons are
+`lesson.py` is a small toolkit for YouTube-style teaching clips. Ten lessons are
 made with it so far:
 
 | | |
@@ -14,6 +14,7 @@ made with it so far:
 | `imu_tilt.py` | Part 3, *Which way is up? How a robot measures its own tilt* (136 s, Range Rover on a PhysX track) |
 | `rocket_pid.py` | Part 4, *Hold still: PID control, flown on a rocket* (150 s, a hopper in PhysX, exhaust in Warp) |
 | `warp_threepp.py` | *Warp × threepp:* GPU simulation in Python, sharing its buffers with the renderer (about a minute; Vulkan, CUDA) |
+| `sockets.py` | AIS2203 lecture film, *Sockets: how programs on different machines talk to each other* (295 s, real packets from a Linux lab) |
 
 Everything in the picture is drawn by threepp. The robot, lights, shadows and 3D
 annotations are one scene. Captions, equations, panels and plots are a second,
@@ -287,6 +288,36 @@ opens on the pool (the fluid). The closing reel cuts on the narrator's words: `N
 returns Kokoro's own alignment of a line (cached beside its WAV), and the cuts land 0.06 s before
 each word is heard. It ends on a wall of every shot, live, with the fire shrinking into its tile,
 and the title over it as "drawn by threepp" is said.
+
+**Sockets (AIS2203).** A lecture film for Part 4 of the AIS2203 e-book (Data Communication), after its
+pages "Sockets, TCP & UDP" and "Networking in C++". The packets are not drawn from a textbook: `sockets_lab.py`
+runs real sockets on Linux (WSL2 works, as root, standard library only), each experiment in a network namespace
+of its own whose loopback gets a netem delay of 20 ms each way, records every packet with an AF_PACKET socket,
+and caches the result in `sockets.net.json`, so the film itself needs neither Linux nor root:
+
+```
+wsl -u root python3 sockets_lab.py --cpp <build dir of sockets/>
+```
+
+The lost third message and the held-back fifth one in the loss beat are chosen (netem is switched to drop, or to
+delay, around that one send); what TCP and UDP then do is the kernel's. The 100 Hz stream loses packets at
+random (netem loss 3 %, data and acknowledgements alike); TCP has `TCP_NODELAY` set. The C++ on screen is
+`sockets/*.cpp`, a CMake project of its own that fetches SimpleSocket; it builds with MSVC and g++, against both the
+published SimpleSocket (5d35263) and a newer checkout, and the lab runs it, each run in a fresh namespace.
+
+```
+[exchange] TCP: 10 packets for one request and its reply; UDP: 2
+[loss] TCP reads: 70 ms 'pose 1', 150 ms 'pose 2', 350 ms 'pose 3pose 4', 502 ms 'pose 5pose 6'
+[loss] TCP resent 'pose 3' at 330 ms (on the receiver's SACK for 'pose 4')
+[loss] UDP received: 'pose 1', 'pose 2', 'pose 4', 'pose 6', 'pose 5'
+[stream] udp: 1459 of 1500 arrived (41 lost); latency median 20.1 ms, max 20.3 ms
+[stream] tcp: 1500 of 1500 arrived; latency median 20.1 ms, p99 78.1 ms, max 130.3 ms
+[cpp] echo client: 'server replied: hello'; ping/pong: one read returned 'pingpong' in 13 of 20 runs
+```
+
+The echo server and client differ from the e-book's text in one place: the e-book reads into a `std::string`,
+and SimpleSocket's `read` takes only `uint8_t` buffers, so that code does not compile (and the server lacks
+`#include <vector>`); the film reads into a `std::vector<uint8_t>`.
 
 ## How a lesson is built
 
