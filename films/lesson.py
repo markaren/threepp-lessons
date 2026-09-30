@@ -14,8 +14,12 @@ and run alike:
     ("IN SHORT" and the repo link). `card` and `code_card` are the house card and a card of
     code that types itself in.
 
+`THREEPP`, `threepp_file`
+    The threepp checkout the films run against ($THREEPP_ROOT, else ../threepp beside this
+    repository), whose python/ is put first on sys.path; without one, the installed threepp.
+
 `data_file`
-    A threepp_data file from THREEPP_DATA_DIR, a checkout next to the repo, or the copies CMake
+    A threepp_data file from THREEPP_DATA_DIR, a checkout next to threepp's, or the copies CMake
     fetches into the build directories.
 
 `run`
@@ -45,22 +49,47 @@ import time
 import numpy as np
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
-_PY = os.path.dirname(os.path.dirname(_HERE))
-if _PY not in sys.path:
-    sys.path.insert(0, _PY)
+ROOT = os.path.dirname(_HERE)                           # this repository
+PROGRAMS = os.path.join(ROOT, "programs")               # the C++ programs the films show and run
+
+
+def _threepp_checkout():
+    """The threepp checkout the films run against: $THREEPP_ROOT, else one next to this
+    repository. None when there is neither; then threepp is the installed package."""
+    for p in (os.environ.get("THREEPP_ROOT", ""), os.path.join(os.path.dirname(ROOT), "threepp")):
+        if p and os.path.isfile(os.path.join(p, "CMakeLists.txt")):
+            return os.path.abspath(p)
+    return None
+
+
+THREEPP = _threepp_checkout()
+if THREEPP and os.path.isdir(os.path.join(THREEPP, "python", "threepp")):
+    if os.path.join(THREEPP, "python") not in sys.path:
+        sys.path.insert(0, os.path.join(THREEPP, "python"))
 import threepp as tp  # noqa: E402,F401  (the lessons take tp from here)
 from threepp.lesson import *  # noqa: E402,F401,F403
 from threepp.lesson import Hud as _Hud, Stage as _Stage  # noqa: E402
 
 
+def threepp_file(*parts):
+    """Path of a file in the threepp checkout (the gallery's screenshots, a threepp example)."""
+    if THREEPP is None:
+        raise FileNotFoundError(f"{os.path.join(*parts)} is in the threepp repository: clone it next to "
+                                f"this one, or set THREEPP_ROOT to a threepp checkout")
+    return os.path.join(THREEPP, *parts)
+
+
 # ── threepp_data ──────────────────────────────────────────────────────────────
 def data_roots():
-    """Where threepp_data may be, in search order: THREEPP_DATA_DIR, a checkout next
-    to the repo, then the copies CMake fetches into the build directories."""
-    repo = os.path.dirname(_PY)
+    """Where threepp_data may be, in search order: THREEPP_DATA_DIR, a checkout next to the
+    threepp checkout, the copies CMake fetches into threepp's build directories, then the
+    copy this repository's own build fetches for the programs."""
     roots = [os.environ.get("THREEPP_DATA_DIR", "")]
-    roots += [os.path.join(os.path.dirname(repo), n) for n in ("threepp-data", "threepp_data")]
-    roots += sorted(glob.glob(os.path.join(repo, "cmake-build-*", "_deps", "threepp_data-src")))
+    if THREEPP:
+        roots += [os.path.join(os.path.dirname(THREEPP), n) for n in ("threepp-data", "threepp_data")]
+        roots += sorted(glob.glob(os.path.join(THREEPP, "cmake-build-*", "_deps", "threepp_data-src")))
+    for build in ("build*", "cmake-build-*"):
+        roots += sorted(glob.glob(os.path.join(ROOT, build, "_deps", "threepp_data-src")))
     return [r for r in roots if r and os.path.isdir(r)]
 
 
@@ -179,8 +208,8 @@ def code_card(ov, t, t_in, t_out, x, y, lines, lang, title, size=20, lh=27, stag
 
 
 # ── C++ programs on screen: steps of a source, and capture builds ──────────────
-# A lesson program grows in steps marked `#if STEP >= n` (examples/lesson/app.cpp, snake/main.cpp),
-# and each step is built as a capture program (examples/lesson/capture.hpp): headless, on a fixed
+# A lesson program grows in steps marked `#if STEP >= n` (programs/app.cpp, programs/snake/main.cpp),
+# and each step is built as a capture program (programs/capture.hpp): headless, on a fixed
 # 1/60 s clock, with the input replayed from a script. The film shows what a step adds, read
 # out of the source, and the window is that program's own output, streamed in as it runs.
 def _cond(directive, step, defines):
@@ -276,10 +305,11 @@ def step_rows(lines, step, defines=("STEP",), base=None):
 
 def capture_exe(name, env="LESSON_APP_BIN"):
     """The capture build `name` (a CMake target beside the lesson's program), from the
-    directory in $`env` or a cmake-build-*/bin of this checkout."""
+    directory in $`env` or the bin/ of a build*/ or cmake-build-*/ directory of this repository."""
     exe = f"{name}.exe" if os.name == "nt" else name
-    repo = os.path.dirname(_PY)
-    roots = [os.environ.get(env, "")] + sorted(glob.glob(os.path.join(repo, "cmake-build-*", "bin")))
+    roots = [os.environ.get(env, "")]
+    for build in ("build*", "cmake-build-*"):
+        roots += sorted(glob.glob(os.path.join(ROOT, build, "bin")))
     for r in roots:
         p = os.path.join(r, exe)
         if r and os.path.isfile(p):

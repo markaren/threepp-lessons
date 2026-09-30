@@ -1,0 +1,12 @@
+# builds of programs/ (and of films/sockets/)
+build*/
+cmake-build-*/
+
+# films, stills, contact sheets and gate records (the lessons' default --outdir), and the voice cache
+lesson_out/
+voice_cache/
+
+__pycache__/
+*.pyc
+.idea/
+.vscode/

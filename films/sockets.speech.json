@@ -1,0 +1,128 @@
+{
+ "af_heart": {
+  "t0": {
+   "s": 4.12,
+   "said": "Sockets: how programs on different machines talk to each other."
+  },
+  "w1": {
+   "s": 10.85,
+   "said": "Threads inside one program share its memory. But a cyber-physical system is spread across machines: a controller on a Raspberry Pi, and an operator's laptop."
+  },
+  "w2": {
+   "s": 7.72,
+   "said": "They share no memory. The laptop cannot read the Pi's variables. All they can do is send each other bytes, over a network."
+  },
+  "w3": {
+   "s": 7.62,
+   "said": "A program's end of that link is a socket. It writes bytes into the socket and reads bytes out of it, much like a file."
+  },
+  "a1": {
+   "s": 6.83,
+   "said": "A socket is found by two things. The I P address picks the machine, like the street address of a building."
+  },
+  "a2": {
+   "s": 6.9,
+   "said": "The port picks one program on that machine, like the apartment number inside the building. A packet needs both."
+  },
+  "a3": {
+   "s": 7.38,
+   "said": "The loopback address, localhost, is this same machine, so a client and a server can be tested on one computer."
+  },
+  "c1": {
+   "s": 7.0,
+   "said": "Networked programs usually take one of two roles. The server starts first: it binds a port, and listens."
+  },
+  "c2": {
+   "s": 6.05,
+   "said": "The client knows the server's address and port, and connects. Three packets set up the connection."
+  },
+  "c3": {
+   "s": 8.28,
+   "said": "The server accepts, and gets a new socket just for this client. The laptop's question arrives right behind, and the Pi answers."
+  },
+  "c4": {
+   "s": 7.42,
+   "said": "Then both ends close. Every packet here was recorded from a real connection, and slowed down so you can follow it."
+  },
+  "p1": {
+   "s": 7.33,
+   "said": "A socket speaks one of two protocols. T C P is a reliable, ordered stream of bytes, over a connection."
+  },
+  "p2": {
+   "s": 7.05,
+   "said": "Those three packets are its handshake: sin, sin-ack, ack. After that, everything that arrives is acknowledged."
+  },
+  "p3": {
+   "s": 7.28,
+   "said": "U D P has no connection. Each datagram is sent on its own, with no handshake and no acknowledgements."
+  },
+  "p4": {
+   "s": 6.62,
+   "said": "The same question and answer over U D P is just two packets. Less work, and nothing is promised."
+  },
+  "l1": {
+   "s": 8.1,
+   "said": "The difference shows when the network misbehaves. Six messages cross a link that loses the third one, and delays the fifth."
+  },
+  "l2": {
+   "s": 9.55,
+   "said": "T C P notices the gap and sends the third again. The fourth is held back until the third arrives, so all six reach the program, in order."
+  },
+  "l3": {
+   "s": 8.28,
+   "said": "U D P just carries on. The third is gone for good, and the fifth arrives after the sixth. The program has to cope with that."
+  },
+  "s1": {
+   "s": 7.17,
+   "said": "Which to use depends on the data. Here the Pi sends the arm's pose to the laptop, a hundred times a second."
+  },
+  "s2": {
+   "s": 10.18,
+   "said": "The poses go over U D P and T C P at once, through a link that loses packets. The see-through arms show what the laptop receives, in slow motion."
+  },
+  "s3": {
+   "s": 7.2,
+   "said": "The U D P copy misses a sample now and then, but the next one is never far behind, so it stays live."
+  },
+  "s4": {
+   "s": 8.72,
+   "said": "The T C P copy gets every sample. But each loss holds up everything behind it, so the copy freezes, then jumps to catch up."
+  },
+  "s5": {
+   "s": 9.57,
+   "said": "So: T C P when every message must arrive, like a command to the robot. U D P when fresh but sometimes lost beats complete but late."
+  },
+  "b1": {
+   "s": 7.53,
+   "said": "One more thing about T C P catches almost everyone out. It carries a stream of bytes, not separate messages."
+  },
+  "b2": {
+   "s": 7.6,
+   "said": "Write ping, then pong, and a single read on the other side can return ping pong. The boundary between them is gone."
+  },
+  "b3": {
+   "s": 6.95,
+   "said": "It happened earlier, too: after the lost packet, one read returned the third and fourth messages together."
+  },
+  "b4": {
+   "s": 8.95,
+   "said": "So mark the boundaries yourself: end each message with a newline, or send its length first. U D P keeps them: one send, one receive."
+  },
+  "k1": {
+   "s": 9.4,
+   "said": "C plus plus has no sockets in its standard library. The operating system's own interface is long-winded, and different on Linux and Windows."
+  },
+  "k2": {
+   "s": 9.62,
+   "said": "A small library such as Simple Socket hides all that. This is a whole echo server: listen on a port, accept a client, read, and write it back."
+  },
+  "k3": {
+   "s": 8.05,
+   "said": "And the client: connect, write hello, and read the reply. Start the server, then the client, and it prints: server replied, hello."
+  },
+  "o1": {
+   "s": 9.75,
+   "said": "In short: an address and a port find the program. T C P delivers every byte, in order. U D P sends datagrams, and promises nothing."
+  }
+ }
+}

@@ -4,7 +4,7 @@
     python sockets.py --stills 30,60,95             # individual frames
     python sockets.py --sheet                       # contact sheet, one frame per 3 s
     python sockets.py --preview --out preview.mp4   # 960x540 @ 30 fps
-    python sockets.py --speech                      # speak every line (Kokoro) and print SPEECH
+    python sockets.py --remeasure                   # say every line again (Kokoro) into sockets.speech.json
 
 Part 4 of the AIS2203 e-book (Data Communication), after its pages "Sockets, TCP & UDP" and
 "Networking in C++": why machines need sockets, IP address and port, server and client,
@@ -36,11 +36,10 @@ import numpy as np
 _HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, _HERE)
 import lesson  # noqa: E402
-from lesson import (DIM, TEXT, Hud, OrbitCamera, Ring3D, Stage, Timeline, Tube3D, _quat_y_to, clamp01,  # noqa: E402
+from lesson import (DIM, TEXT, Hud, OrbitCamera, Ring3D, Stage, Timeline, Tube3D, clamp01,  # noqa: E402
                     data_file, ease_out, ease_out_back, envelope, fade_in_out, remap, run, smooth, smoother,
-                    standard, tp)
-import threepp_intro as intro  # noqa: E402  (the code cards and the syntax colours)
-from threepp_intro import card, code_block  # noqa: E402
+                    quat_y_to, standard, tp)
+from lesson import card  # noqa: E402  (the house card)
 
 FPS = 60
 NET_FILE = os.path.join(_HERE, "sockets.net.json")
@@ -56,13 +55,13 @@ C_OUT = 0xa6e3a1         # what a program prints
 C_PI = 0x7fd08a
 C_LAP = 0x90caf9
 
-intro.KW["cpp"] |= {"char", "sizeof", "void", "bool", "true", "false", "nullptr"}
+CPP_KEYWORDS = lesson.KEYWORDS["cpp"] | {"char", "sizeof", "void", "bool", "true", "false", "nullptr"}
 
 # ── the script ────────────────────────────────────────────────────────────────
 # The narration sets the pace: every caption lasts as long as its spoken line (Kokoro,
-# af_heart, measured with --speech) plus the voice's lead-in and tail and a small margin,
-# and each beat's events hang off its captions. Until a changed line is re-measured, `run`
-# holds the picture for any overrun.
+# af_heart, measured with --remeasure into sockets.speech.json) plus the voice's lead-in
+# and tail and a small margin, and each beat's events hang off its captions. Until a changed
+# line is re-measured, `run` holds the picture for any overrun.
 CAPTION_TEXT = {
     "t0": "Sockets: how programs on different machines talk to each other.",
     "w1": "Threads inside one program share its memory. But a cyber-physical system is spread across machines: "
@@ -119,36 +118,19 @@ CAPTION_TEXT = {
 VOICE_ONLY = {"t0", "o1"}       # spoken over the title card and the closing card, not drawn as captions
 
 # how the narrator says the names on screen
-lesson.SPOKEN_WORDS.update({"IP": "I P", "TCP": "T C P", "UDP": "U D P", "SYN": "sin", "ACK": "ack",
-                            "C++": "C plus plus", "SimpleSocket": "Simple Socket", "pingpong": "ping pong"})
+WORDS = {"IP": "I P", "TCP": "T C P", "UDP": "U D P", "SYN": "sin", "ACK": "ack",
+         "C++": "C plus plus", "SimpleSocket": "Simple Socket", "pingpong": "ping pong"}
 
-SPEECH = {"t0": 4.12, "w1": 10.85, "w2": 7.72, "w3": 7.62, "a1": 6.83, "a2": 6.9, "a3": 7.38, "c1": 7.0, "c2": 6.05,
-          "c3": 8.28, "c4": 7.42, "p1": 7.33, "p2": 7.05, "p3": 7.28, "p4": 6.62, "l1": 8.1, "l2": 9.55, "l3": 8.28,
-          "s1": 7.17, "s2": 10.18, "s3": 7.2, "s4": 8.72, "s5": 9.57, "b1": 7.53, "b2": 7.6, "b3": 6.95, "b4": 8.95,
-          "k1": 9.4, "k2": 9.62, "k3": 8.05, "o1": 9.75}     # seconds, af_heart
+SPEECH = lesson.Speech(CAPTION_TEXT, os.path.join(_HERE, "sockets.speech.json"), words=WORDS, voice_only=VOICE_ONLY)
 # beat, lead-in before its first caption, its captions, time after the last one
 PLAN = [("open", 1.0, ["t0"], 1.2), ("why", 0.3, ["w1", "w2", "w3"], 0.6), ("addr", 0.4, ["a1", "a2", "a3"], 0.8),
         ("cs", 0.4, ["c1", "c2", "c3", "c4"], 1.0), ("proto", 0.4, ["p1", "p2", "p3", "p4"], 1.4),
         ("loss", 0.4, ["l1", "l2", "l3"], 1.4), ("stream", 0.6, ["s1", "s2", "s3", "s4", "s5"], 1.0),
         ("bytes", 0.4, ["b1", "b2", "b3", "b4"], 1.0), ("code", 0.4, ["k1", "k2", "k3"], 2.2),
         ("outro", 0.4, ["o1"], 2.6)]
-SLACK = lesson.VOICE_LEAD + lesson.VOICE_TAIL + 0.3     # a caption outlasts its speech by this much
 
 
-def _layout():
-    tl, cap, t = Timeline(), {}, 0.0
-    for name, lead, keys, tail in PLAN:
-        c = t + lead
-        for k in keys:
-            cap[k] = (c, c + SPEECH[k] + SLACK)
-            c = cap[k][1] + 0.2
-        end = (c - 0.2 if keys else t) + tail
-        tl.add(name, t, end)
-        t = end
-    return tl, cap
-
-
-TL, CAP = _layout()
+TL, CAP = SPEECH.layout(PLAN)
 
 
 def cap0(k):
@@ -158,7 +140,7 @@ def cap0(k):
 
 def at(k, f):
     """A moment f (0..1) of the way through caption k's spoken line."""
-    return cap0(k) + lesson.VOICE_LEAD + f * SPEECH[k]
+    return cap0(k) + lesson.VOICE_LEAD + f * SPEECH.seconds(k)
 
 
 SUMMARY = [(r"$\mathrm{IP:port}$", "Which machine, and which program on it."),
@@ -495,7 +477,7 @@ class Painter:
         self.echo_out = cpp.get("echo", {"server": ["listening on port 8080..."], "client": ["server replied: hello"]})
         pp = [l for l in cpp.get("pingpong", []) if l.endswith("pingpong")]
         self.pingpong_out = pp[0] if pp else "read 8 bytes: pingpong"
-        self.captions = [(a, b, CAPTION_TEXT[k]) + ((False,) if k in VOICE_ONLY else ()) for k, (a, b) in CAP.items()]
+        self.captions = SPEECH.captions(CAP)
         self.code = {n: read_cpp(n) for n in ("echo_server.cpp", "echo_client.cpp", "posix_echo_server.cpp")}
 
     # 3D ----------------------------------------------------------------------
@@ -615,7 +597,7 @@ class Painter:
             pos, tan = f.path.at(along, f.lane)
             m.visible = True
             m.position.set(*pos)
-            m.quaternion.set(*_quat_y_to(tan))
+            m.quaternion.set(*quat_y_to(tan))
             col = {"data": C_TCP, "ctrl": C_CTRL, "udp": C_UDP, "byte": 0xdfe8ff}[f.kind]
             size = {"data": 1.0, "ctrl": 0.72, "udp": 1.0, "byte": 0.45}[f.kind]
             if f.note == "sent again":
@@ -1087,9 +1069,9 @@ class Painter:
             card(ov, 70, 50, w, 76 + lh * len(lines), pa, "posix_echo_server.cpp  ·  THE OS's OWN API, LINUX ONLY")
             bad = {j for j, l in enumerate(lines) if any(s in l for s in ("reinterpret_cast", "htons", "arpa/inet",
                                                                            "unistd", "close(", "SO_REUSEADDR"))}
-            code_block(ov, 100, 108, lines, "cpp", size, lh, pa,
-                       hl=lambda j: envelope(t, at("k1", 0.5), at("k2", 0.1), 0.4, 0.4) if j in bad else 0.0,
-                       reveal=lambda j: remap(t, at("k1", 0.08) + 0.05 * j, at("k1", 0.2) + 0.05 * j))
+            ov.code(100, 108, lines, "cpp", size, lh, pa, keywords=CPP_KEYWORDS,
+                    hl=lambda j: envelope(t, at("k1", 0.5), at("k2", 0.1), 0.4, 0.4) if j in bad else 0.0,
+                    reveal=lambda j: remap(t, at("k1", 0.08) + 0.05 * j, at("k1", 0.2) + 0.05 * j))
             wa = pa * smooth(remap(t, at("k1", 0.6), at("k1", 0.75)))
             card(ov, 70 + w + 40, 200, 600, 150, wa, "ON WINDOWS")
             for j, s in enumerate(("Winsock2: WSAStartup first,", "a SOCKET handle instead of an int,",
@@ -1104,14 +1086,14 @@ class Painter:
             cw = ov.text_width("0", size, "mono")
             ws = max(len(l) for l in srv) * cw + 60
             card(ov, 70, 50, ws, 76 + lh * len(srv), sa, "echo_server.cpp  ·  SIMPLESOCKET")
-            code_block(ov, 100, 108, srv, "cpp", size, lh, sa,
-                       reveal=lambda j: remap(t, at("k2", 0.3) + 0.12 * j, at("k2", 0.36) + 0.12 * j))
+            ov.code(100, 108, srv, "cpp", size, lh, sa, keywords=CPP_KEYWORDS,
+                    reveal=lambda j: remap(t, at("k2", 0.3) + 0.12 * j, at("k2", 0.36) + 0.12 * j))
             ca = a * envelope(t, at("k3", 0.0), TL.end("code") + 0.3, 0.6, 0.6)
             wc = max(len(l) for l in cli) * cw + 60
             xc = 1850 - wc
             card(ov, xc, 50, wc, 76 + lh * len(cli), ca, "echo_client.cpp  ·  SIMPLESOCKET")
-            code_block(ov, xc + 30, 108, cli, "cpp", size, lh, ca,
-                       reveal=lambda j: remap(t, at("k3", 0.02) + 0.09 * j, at("k3", 0.08) + 0.09 * j))
+            ov.code(xc + 30, 108, cli, "cpp", size, lh, ca, keywords=CPP_KEYWORDS,
+                    reveal=lambda j: remap(t, at("k3", 0.02) + 0.09 * j, at("k3", 0.08) + 0.09 * j))
             # the two terminals: what the programs printed
             ta = a * envelope(t, at("k3", 0.55), TL.end("code") + 0.3, 0.5, 0.6)
             yT = 76 + lh * max(len(srv), len(cli)) + 90
@@ -1337,19 +1319,5 @@ def setup(width, height):
     return render, painter.captions
 
 
-def measure_speech(voice="af_heart", cache=os.path.join("lesson_out", "voice_cache")):
-    """Speak every line and print how long each takes: the SPEECH table above."""
-    narr = lesson.Narration(voice, cache_dir=cache)
-    out = {}
-    for k, text in CAPTION_TEXT.items():
-        out[k] = round(len(narr.clip(text)) / lesson.Narration.RATE, 2)
-        print(f"{k}: {out[k]:5.2f} s  {lesson.spoken(text)}", flush=True)
-    print("SPEECH =", out)
-
-
 if __name__ == "__main__":
-    if "--speech" in sys.argv:
-        i = sys.argv.index("--speech")
-        measure_speech(cache=sys.argv[i + 1] if len(sys.argv) > i + 1 else os.path.join("lesson_out", "voice_cache"))
-    else:
-        run("sockets", TL.duration, setup, fps=FPS)
+    run("sockets", TL.duration, setup, fps=FPS, speech=SPEECH)

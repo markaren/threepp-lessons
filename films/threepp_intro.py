@@ -48,7 +48,7 @@ from lesson import (DIM, TEXT, Arrow3D, Hud, Keys, Marker3D, OrbitCamera, Cloud,
 from lesson import card, code_card  # noqa: E402  (the house widgets)
 
 FPS = 60
-REPO = os.path.dirname(os.path.dirname(os.path.dirname(_HERE)))
+SCREENSHOTS = lesson.threepp_file("doc", "screenshots")     # the gallery is threepp's own
 
 C_ACCENT = 0x4cc9f0
 C_WARM = 0xffb347
@@ -419,7 +419,7 @@ def run_hello(outdir):
     import subprocess
     import tempfile
     out = os.path.join(tempfile.gettempdir(), f"threepp_intro_hello_{os.getpid()}.npy")
-    code = _HELLO_RUNNER.format(py=os.path.dirname(os.path.dirname(_HERE)), src="\n".join(HELLO_PY),
+    code = _HELLO_RUNNER.format(py=os.path.dirname(os.path.dirname(tp.__file__)), src="\n".join(HELLO_PY),
                                 n=HELLO_FRAMES, out=out)
     subprocess.run([sys.executable, "-c", code], check=True)
     frames = np.load(out)
@@ -497,7 +497,7 @@ class Painter:
         self.captions = self.make_captions()
         self.textures = []
         for f, _ in GALLERY:
-            tex = tp.TextureLoader().load(os.path.join(REPO, "doc", "screenshots", f))
+            tex = tp.TextureLoader().load(os.path.join(SCREENSHOTS, f))
             tex.color_space = tp.ColorSpace.SRGB
             self.textures.append(tex)
         self._cropped = [False] * len(GALLERY)
@@ -957,7 +957,7 @@ class Painter:
         w, h, gx, gy = 520, 292, 30, 76
         for k, ((f, label), tex) in enumerate(zip(GALLERY, self.textures)):
             if not self._cropped[k]:
-                _crop(tex, os.path.join(REPO, "doc", "screenshots", f), w / h)
+                _crop(tex, os.path.join(SCREENSHOTS, f), w / h)
                 self._cropped[k] = True
             r, c = divmod(k, 3)
             x, y = 150 + c * (w + gx), 160 + r * (h + gy)

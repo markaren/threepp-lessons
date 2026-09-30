@@ -1,7 +1,9 @@
-# lesson: explainer videos made with threepp
+# threepp lessons: explainer films made with threepp
 
-`lesson.py` is a small toolkit for YouTube-style teaching clips. Ten lessons are
-made with it so far:
+Teaching films made with [threepp](https://github.com/markaren/threepp), the C++ port of
+three.js, drawn entirely by threepp and narrated offline. They used to live in threepp's own
+repository (`python/examples/lesson`); this repository holds the films, the C++ programs they
+show, and the tools that check them. Ten films so far:
 
 | | |
 |---|---|
@@ -16,24 +18,52 @@ made with it so far:
 | `warp_threepp.py` | *Warp × threepp:* GPU simulation in Python, sharing its buffers with the renderer (about a minute; Vulkan, CUDA) |
 | `sockets.py` | AIS2203 lecture film, *Sockets: how programs on different machines talk to each other* (295 s, real packets from a Linux lab) |
 
+## Layout and setup
+
+| | |
+|---|---|
+| `films/` | the films (`python films/ik_fr3.py`), `lesson.py` (the house layer on top of `threepp.lesson`), and each film's measured narration (`*.speech.json`) and typeset equations (`*.math.json`) |
+| `programs/` | the C++ programs the films show and run: Part 0b's `app.cpp` and Part 0c/0d's `snake/`, with `capture.hpp` for their headless capture builds |
+| `tools/lesson_gate.py` | the regression gate: does a change alter a film? (captions, spoken lines and holds must match exactly, frames within a null of two runs) |
+
+The films need threepp's Python module, and a few need files from threepp's repository
+(Part 0's gallery screenshots, the Warp film's `warp_round_trip.py`). Clone threepp next to
+this repository (`../threepp`) or point `THREEPP_ROOT` at a checkout; its `python/` goes first
+on `sys.path`, so a module built in that checkout is the one the films use. Without a
+checkout, the films import the installed `threepp` (`pip install "threepp[lesson]"`), and
+the two that need threepp's files say so. The films follow threepp's dev branch.
+
+The C++ programs build with CMake. The project uses a threepp checkout next to this one
+if there is one, and otherwise fetches threepp's dev branch, as Part 0 shows a project of
+your own doing:
+
+```
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --target all captures      # the programs, the Snake tests, and every capture build
+ctest --test-dir build                         # test_snake
+```
+
+The capture builds land in `build/bin`, where `films/lesson.py` finds them (any `build*/bin`
+or `cmake-build-*/bin` of this repository, or `LESSON_APP_BIN`).
+
 Everything in the picture is drawn by threepp. The robot, lights, shadows and 3D
 annotations are one scene. Captions, equations, panels and plots are a second,
 orthographic scene rendered on top. Python only choreographs and pipes finished
 frames to ffmpeg.
 
 ```
-python ik_fr3.py                                             # lesson_out/ik_fr3.mp4: 1920x1080, 60 fps, about 5 min
-python ik_fr3.py --preview --out preview.mp4                 # 960x540, 30 fps
-python ik_fr3.py --stills 10.5,50,72 --outdir shots          # single frames
-python ik_fr3.py --sheet --outdir shots                      # contact sheet, one frame per 3 s
-python ik_fr3.py --from 48 --to 64 --out iter.mp4            # one beat
-python ik_fr3.py --srt                                       # captions as lesson_out/ik_fr3.srt, for YouTube
-python ik_fr3.py --voice am_michael                          # another narrator (default af_heart)
-python ik_fr3.py --no-voice                                  # a silent film
-python threepp_intro.py --remeasure                          # measure the narration again (lessons paced by it)
+python films/ik_fr3.py                                       # lesson_out/ik_fr3.mp4: 1920x1080, 60 fps, about 5 min
+python films/ik_fr3.py --preview --out preview.mp4           # 960x540, 30 fps
+python films/ik_fr3.py --stills 10.5,50,72 --outdir shots    # single frames
+python films/ik_fr3.py --sheet --outdir shots                # contact sheet, one frame per 3 s
+python films/ik_fr3.py --from 48 --to 64 --out iter.mp4      # one beat
+python films/ik_fr3.py --srt                                 # captions as lesson_out/ik_fr3.srt, for YouTube
+python films/ik_fr3.py --voice am_michael                    # another narrator (default af_heart)
+python films/ik_fr3.py --no-voice                            # a silent film
+python films/threepp_intro.py --remeasure                    # measure the narration again (lessons paced by it)
 ```
 
-`threepp_intro.py`, `first_app.py`, `snake_oo.py`, `depth_map.py`, `imu_tilt.py`, `rocket_pid.py` and `warp_threepp.py` take the same flags. Output goes to `lesson_out/` in the current
+`threepp_intro.py`, `first_app.py`, `snake_oo.py`, `depth_map.py`, `imu_tilt.py`, `rocket_pid.py`, `warp_threepp.py` and `sockets.py` take the same flags. Output goes to `lesson_out/` in the current
 directory unless `--out` / `--outdir` say otherwise.
 
 Needs threepp (GL renderer only, no Vulkan), numpy, threepp_data (for the FR3
@@ -43,7 +73,7 @@ standard library. The equations are typeset by matplotlib once and cached in
 `<lesson>.math.json`, so matplotlib is only needed when you add or edit one.
 Part 3 also needs the PhysX backend (`tp.HAS_PHYSX`) and the Evoque glTF from
 threepp_data, and a threepp module built after `PhysxVehicle.associate` was added.
-Part 0 needs the PhysX backend too, and the screenshots in `doc/screenshots`.
+Part 0 needs the PhysX backend too, and the screenshots in threepp's `doc/screenshots`.
 Part 4 needs the PhysX backend, a threepp module with `RigidBody.add_force_at_pos`, and
 NVIDIA Warp on a CUDA GPU for the exhaust, smoke and dust.
 
@@ -71,8 +101,9 @@ again and rewrites the `.speech.json`, and until then the lesson reports the lin
 holds the picture for any overrun.
 
 Each threepp_data file is looked up in `THREEPP_DATA_DIR`, then a `threepp_data`
-(or `threepp-data`) checkout next to the repo, then the copies CMake fetches into
-`cmake-build-*/_deps/threepp_data-src`, and the first place that has that file wins.
+(or `threepp-data`) checkout next to the threepp checkout, then the copies CMake fetches into
+threepp's `cmake-build-*/_deps/threepp_data-src` and this repository's `build*/_deps/threepp_data-src`,
+and the first place that has that file wins.
 A missing studio HDR is reported and the lesson renders without its
 image-based lighting.
 
@@ -149,7 +180,7 @@ step (canvas and renderer, scene, camera, mesh as geometry plus material, light,
 loop), followed by its Python twin, shared ownership, the scene graph, materials and
 lights, an FR3 from URDF driven by `IkSolver`, PhysX boxes, a `DepthSensor`, and a
 `CMakeLists.txt` that fetches threepp. The Vulkan renderer appears only as screenshots
-from `doc/screenshots`, labelled as such. What is on screen was checked:
+from threepp's `doc/screenshots`, labelled as such. What is on screen was checked:
 
 * every C++ snippet compiles against the headers; the ownership beat's `use_count()`
   values (9 and 9 after the loop, 1 and 1 after `row->clear()`, 0 after
@@ -170,7 +201,7 @@ from `doc/screenshots`, labelled as such. What is on screen was checked:
 [depth] 156 scans of 160 x 120, median 17142 points
 ```
 
-**Part 0b.** The program is `examples/lesson/app.cpp`: Part 0's hello.cpp, grown one step at a
+**Part 0b.** The program is `programs/app.cpp`: Part 0's hello.cpp, grown one step at a
 time (OrbitControls, a glTF model, an HDR sky, an AnimationMixer, shadows, an InstancedMesh, a
 Raycaster, a Dear ImGui panel). Each step is marked `#if STEP >= n`, so `-DLESSON_APP_STEP=n` builds
 the program as it stood after step n. The film reads its code out of that file: a step's lines are
@@ -178,7 +209,7 @@ the ones that appear (or go) when the preprocessor runs with STEP = n instead of
 is the program's own output. Each step is its own build (`lesson_app_capture_0` .. `_8`, and
 `_6_separate` with a Mesh per stone; not built by default), run while the film is made, headless on
 a fixed 1/60 s clock, with the mouse replayed from a script through the canvas's own event path
-(`examples/lesson/capture.hpp`). Its frames stream to the film through a pipe. The pointer over the
+(`programs/capture.hpp`). Its frames stream to the film through a pipe. The pointer over the
 window marks where the script puts the mouse, and the draw calls are GLRenderer::info()'s counts
 for that frame:
 
@@ -187,11 +218,11 @@ for that frame:
 [draw calls] one Mesh per stone 961..962, one InstancedMesh 5..5
 ```
 
-Part 0b needs those capture targets built (`cmake --build <dir> --target lesson_app_capture_0 ...`;
-set `LESSON_APP_BIN` if they are not in a `cmake-build-*/bin` beside the repo).
+Part 0b needs those capture targets built (`cmake --build build --target captures`, or one by one;
+set `LESSON_APP_BIN` if they are not in a `build*/bin` or `cmake-build-*/bin` of this repository).
 
 **Parts 0c and 0d** (`snake_oo.py`, `--part d` for the second). The programs are in
-`examples/lesson/snake/`, for students who know Part 0b and now need to structure a program that
+`programs/snake/`, for students who know Part 0b and now need to structure a program that
 grows, and Part 0c is made for complete beginners: one thing on screen at a time, short
 sentences with room between them. It opens on the game itself (the snake, the apple and a wall are
 labelled as the narrator names them, on the squares the scripted route puts them) and says what it
@@ -254,7 +285,7 @@ pad where it hits, dust kicked up while the engine is low) and drawn by threepp 
 in age bands. They are the only part of the picture that is not the simulation's state; they
 are checkpointed so any frame can be rendered on its own.
 
-**Warp × threepp.** The film's own program is `../warp_round_trip.py`. The film runs it in a
+**Warp × threepp.** The film's own program is threepp's `python/examples/warp_round_trip.py`. The film runs it in a
 subprocess (`--stream`) that steps its simulation at 60 Hz on the film's clock and pipes each
 frame in, and the code on screen is read from that file between its `# [name]` markers. In it:
 
@@ -302,7 +333,7 @@ wsl -u root python3 sockets_lab.py --cpp <build dir of sockets/>
 The lost third message and the held-back fifth one in the loss beat are chosen (netem is switched to drop, or to
 delay, around that one send); what TCP and UDP then do is the kernel's. The 100 Hz stream loses packets at
 random (netem loss 3 %, data and acknowledgements alike); TCP has `TCP_NODELAY` set. The C++ on screen is
-`sockets/*.cpp`, a CMake project of its own that fetches SimpleSocket; it builds with MSVC and g++, against both the
+`films/sockets/*.cpp`, a CMake project of its own that fetches SimpleSocket; it builds with MSVC and g++, against both the
 published SimpleSocket (5d35263) and a newer checkout, and the lab runs it, each run in a fresh namespace.
 
 ```
@@ -333,7 +364,7 @@ own clock; it can declare moments where the film stands still (`render.holds`, a
 does to introduce each estimate on its own), and `run` adds holds for the narration.
 
 The toolkit is the experimental `threepp.lesson` package, which ships in the threepp wheel
-(`pip install "threepp[lesson]"`; see [python/README.md](../../README.md)). `lesson.py`
+(`pip install "threepp[lesson]"`; see [threepp's python/README.md](https://github.com/markaren/threepp/blob/dev/python/README.md)). `lesson.py`
 re-exports all of it and adds the house layer these films share, so a lesson imports
 everything from `lesson`.
 
@@ -361,7 +392,8 @@ In `lesson.py`, the house layer:
 | `Stage` | the package's Stage with the lessons' defaults: GL, and `env` a file name in threepp_data/textures/env (the studio HDR unless told otherwise) |
 | `Hud.title_card`, `summary` | the opening title, and the closing "IN SHORT" card with the repo link |
 | `card`, `code_card` | the house card, and a card of code that types itself in, with the program's output under it |
-| `data_file` | a threepp_data file from `THREEPP_DATA_DIR`, a checkout next to the repo, or the build directories |
+| `THREEPP`, `threepp_file` | the threepp checkout the films run against (`THREEPP_ROOT`, else `../threepp`), and a file in it |
+| `data_file` | a threepp_data file from `THREEPP_DATA_DIR`, a checkout next to threepp's, or the build directories |
 | `run` | the shared command line: film, preview, one stretch, stills, contact sheet, `.srt` captions, narration, `--remeasure`, `--gate` |
 | `house_rule_warnings` | the house rules below, checked by `run` |
 

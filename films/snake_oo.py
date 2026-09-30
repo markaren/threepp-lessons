@@ -5,7 +5,7 @@
     python snake_oo.py --stills 30,60,95             # individual frames (and the other flags every lesson takes)
 
 Part 0c shows one thing at a time. It opens on the game (what Snake is), says what it will do,
-then writes Snake three times: all in main() (examples/lesson/snake/tangle), whose lines it
+then writes Snake three times: all in main() (programs/snake/tangle), whose lines it
 colours by their job (the rules in green, the drawing in blue, both where a line does both); a
 class that inherits from threepp's Group (trap), as "is a" against "has a"; and the rules in a
 Game class of their own (model/) with the drawing in SnakeView (view/). Then one game read
@@ -23,7 +23,7 @@ What is on screen was checked against the programs:
 * every window is that program's own output. Each program (and each step of main.cpp) is built
   as a capture target (lesson_snake_*_capture) and run while the film is made: headless, on a
   fixed 1/60 s clock, with the keys pressed by a script through the canvas's own event path
-  (examples/lesson/capture.hpp). The keys drawn under the window are the ones the script presses,
+  (programs/capture.hpp). The keys drawn under the window are the ones the script presses,
   and the labels in the opening point at the squares the script's route puts things on. The 3D
   board beside the text board is lesson_snake_capture_5's frame, cropped to the board;
 * the text board is what lesson_snake_capture_5 --ascii printed, frame for frame; the test run is
@@ -68,8 +68,7 @@ NAME = "snake_oo" if PART == "c" else "snake_oo_d"
 
 FPS = 60
 TICK = 0.2                                           # the programs move five squares a second
-REPO = os.path.dirname(os.path.dirname(os.path.dirname(_HERE)))
-SNAKE = os.path.join(REPO, "examples", "lesson", "snake")
+SNAKE = os.path.join(lesson.PROGRAMS, "snake")
 
 C_ACCENT = 0x9be564
 C_RULE = 0x7bd389                                    # the rules

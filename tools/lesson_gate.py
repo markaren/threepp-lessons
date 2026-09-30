@@ -4,7 +4,7 @@
     python lesson_gate.py --compare base1 base2                    # the null: two runs of one tree
     python lesson_gate.py --compare base1 after --null base1 base2  # exit 0 = within the null
 
---save runs every lesson in ../lesson with `--gate <dir>/<lesson>` (one setup(), narration on),
+--save runs every lesson in ../films with `--gate <dir>/<lesson>` (one setup(), narration on),
 which writes the captions on the film clock (.srt), every caption's spoken text and every hold
 (.voice.json), a contact sheet and a full-size still at the middle of every caption.
 
@@ -34,10 +34,10 @@ import numpy as np
 from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-LESSON_DIR = os.path.join(os.path.dirname(HERE), "lesson")
+LESSON_DIR = os.path.join(os.path.dirname(HERE), "films")
 FILMS = os.path.abspath("lesson_out")
 
-# name: (script, cwd, --outdir relative to cwd)
+# name: (script, cwd, --outdir relative to cwd[, the lesson's own arguments])
 LESSONS = {
     "intro": ("threepp_intro.py", f"{FILMS}/intro", "."),
     "first_app": ("first_app.py", f"{FILMS}/first_app", "."),
@@ -46,6 +46,9 @@ LESSONS = {
     "ik_fr3": ("ik_fr3.py", f"{FILMS}/_api/voice/ik_fr3", "."),
     "depth_map": ("depth_map.py", f"{FILMS}/_api/voice/depth_map", "."),
     "warp": ("warp_threepp.py", f"{FILMS}/warp", "lesson_out"),
+    "snake": ("snake_oo.py", f"{FILMS}/snake_oo", "."),
+    "snake_d": ("snake_oo.py", f"{FILMS}/snake_oo_d", ".", ["--part", "d"]),
+    "sockets": ("sockets.py", f"{FILMS}/sockets", "."),
 }
 WARP_CLIPS = ("warp_fluid.mp4", "blast.mp4", "gummy.mp4", "jelly.mp4")
 
@@ -68,7 +71,7 @@ def save(dest, names):
         with open(record, encoding="utf-8") as fh:
             summary = json.load(fh)
     for name in names:
-        script, cwd, outdir = LESSONS[name]
+        script, cwd, outdir, *extra = LESSONS[name]
         os.makedirs(cwd, exist_ok=True)
         cache = os.path.join(cwd, outdir, "voice_cache")
         if name == "warp":
@@ -80,7 +83,8 @@ def save(dest, names):
         before = set(os.listdir(cache)) if os.path.isdir(cache) else set()
         gate = os.path.abspath(os.path.join(dest, name))
         log = os.path.join(dest, f"{name}.log")
-        cmd = [sys.executable, os.path.join(LESSON_DIR, script), "--gate", gate, "--outdir", outdir]
+        cmd = [sys.executable, os.path.join(LESSON_DIR, script), *(extra[0] if extra else []),
+               "--gate", gate, "--outdir", outdir]
         print(f"[{name}] {' '.join(cmd)}  (cwd {cwd})", flush=True)
         t0 = time.time()
         with open(log, "w", encoding="utf-8") as fh:

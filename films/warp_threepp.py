@@ -33,7 +33,7 @@ from lesson import (DIM, TEXT, Hud, Stage, envelope, fade_in_out, remap, run, sm
 from lesson import card  # noqa: E402  (the house card)
 
 FPS = 60
-EXAMPLES = os.path.dirname(_HERE)
+EXAMPLES = lesson.threepp_file("python", "examples")     # the film's program is threepp's own example
 HERO = os.path.join(EXAMPLES, "warp_round_trip.py")
 CLIPS = os.path.join("lesson_out", "warp_clips")
 

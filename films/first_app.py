@@ -5,7 +5,7 @@
     python first_app.py --sheet                       # contact sheet, one frame per 3 s
     python first_app.py --preview --out preview.mp4   # 960x540 @ 30 fps
 
-The program is examples/lesson/app.cpp. It starts as Part 0's hello.cpp and grows one
+The program is programs/app.cpp. It starts as Part 0's hello.cpp and grows one
 step at a time (orbit controls, a glTF model, an HDR sky, animation, shadows, instancing,
 picking, a Dear ImGui panel), each step marked `#if STEP >= n` in the source.
 
@@ -17,7 +17,7 @@ What is on screen was checked against the program:
 * the window is that program's own output. Each step is built on its own
   (lesson_app_capture_<n>, CMake targets beside lesson_app) and run while the film is
   made: headless, on a fixed 1/60 s clock, with the mouse replayed from a script through
-  the canvas's own event path (examples/lesson/capture.hpp). The pointer drawn over the
+  the canvas's own event path (programs/capture.hpp). The pointer drawn over the
   window marks where that script puts the mouse; the program itself draws none;
 * the draw calls and triangles are what the renderer counted for that frame
   (GLRenderer::info()).
@@ -39,8 +39,7 @@ from lesson import (DIM, TEXT, Hud, Stage, clamp01, ease_out, envelope, fade_in_
 from lesson import Stream, card, indent, preprocess, step_rows, tokenize  # noqa: E402
 
 FPS = 60
-REPO = os.path.dirname(os.path.dirname(os.path.dirname(_HERE)))
-APP_CPP = os.path.join(REPO, "examples", "lesson", "app.cpp")
+APP_CPP = os.path.join(lesson.PROGRAMS, "app.cpp")
 
 C_ACCENT = 0x4cc9f0
 C_WARM = 0xffb347
