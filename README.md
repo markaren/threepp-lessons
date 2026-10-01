@@ -3,7 +3,7 @@
 Teaching films made with [threepp](https://github.com/markaren/threepp), the C++ port of
 three.js, drawn entirely by threepp and narrated offline. They used to live in threepp's own
 repository (`python/examples/lesson`); this repository holds the films, the C++ programs they
-show, and the tools that check them. Ten films so far:
+show, and the tools that check them. Eleven films so far:
 
 | | |
 |---|---|
@@ -15,6 +15,7 @@ show, and the tools that check them. Ten films so far:
 | `depth_map.py` | Part 2, *How a robot sees in 3D: from depth pixels to a map* (103 s) |
 | `imu_tilt.py` | Part 3, *Which way is up? How a robot measures its own tilt* (136 s, Range Rover on a PhysX track) |
 | `rocket_pid.py` | Part 4, *Hold still: PID control, flown on a rocket* (150 s, a hopper in PhysX, exhaust in Warp) |
+| `light_a_frame.py` | Part 6, *How threepp lights a frame:* the Vulkan renderer's hybrid lighting, one lighting view at a time (134 s; Vulkan with ray queries) |
 | `warp_threepp.py` | *Warp × threepp:* GPU simulation in Python, sharing its buffers with the renderer (about a minute; Vulkan, CUDA) |
 | `sockets.py` | AIS2203 lecture film, *Sockets: how programs on different machines talk to each other* (295 s, real packets from a Linux lab) |
 
@@ -63,7 +64,7 @@ python films/ik_fr3.py --no-voice                            # a silent film
 python films/threepp_intro.py --remeasure                    # measure the narration again (lessons paced by it)
 ```
 
-`threepp_intro.py`, `first_app.py`, `snake_oo.py`, `depth_map.py`, `imu_tilt.py`, `rocket_pid.py`, `warp_threepp.py` and `sockets.py` take the same flags. Output goes to `lesson_out/` in the current
+`threepp_intro.py`, `first_app.py`, `snake_oo.py`, `depth_map.py`, `imu_tilt.py`, `rocket_pid.py`, `light_a_frame.py`, `warp_threepp.py` and `sockets.py` take the same flags. Output goes to `lesson_out/` in the current
 directory unless `--out` / `--outdir` say otherwise.
 
 Needs threepp (GL renderer only, no Vulkan), numpy, threepp_data (for the FR3
@@ -76,6 +77,9 @@ threepp_data, and a threepp module built after `PhysxVehicle.associate` was adde
 Part 0 needs the PhysX backend too, and the screenshots in threepp's `doc/screenshots`.
 Part 4 needs the PhysX backend, a threepp module with `RigidBody.add_force_at_pos`, and
 NVIDIA Warp on a CUDA GPU for the exhaust, smoke and dust.
+Part 6 needs the Vulkan backend (`tp.HAS_VULKAN`) and a GPU with `VK_KHR_ray_query`, and a threepp
+module that binds `VulkanRenderer.lighting_view` and `probe_grid()`; with a module that lacks them
+the film says so when it reaches its first shot of the room.
 
 **Narration.** The captions are read aloud by [Kokoro](https://huggingface.co/hexgrad/Kokoro-82M),
 an offline neural TTS model (82M parameters, Apache-2.0): `pip install kokoro soundfile`,
@@ -90,9 +94,9 @@ muxed into the mp4 as AAC. `--no-voice` renders without Kokoro. A caption given 
 narrate its title card, so the film has sound from the first second.
 Kokoro's own reading of a word can be wrong; `threepp.lesson.DEFAULT_WORDS` respells those for every
 lesson, a lesson's own table (`WORDS`) adds its names, and a `[word](/phonemes/)` entry sets
-the phonemes outright (PhysX is `/fˈɪzˌɛks/`). Parts 0, 0b, 3 and 4 and the Warp film go
+the phonemes outright (PhysX is `/fˈɪzˌɛks/`). Parts 0, 0b, 3, 4 and 6 and the Warp film go
 further and time their scripts from the measured length of each spoken line (`lesson.Speech`,
-read from `<lesson>.speech.json`), so their films never hold for the voice: Parts 0 and 0b and
+read from `<lesson>.speech.json`), so their films never hold for the voice: Parts 0, 0b and 6 and
 the Warp film lay their whole timeline out from them (`Speech.layout`), Part 4 places each line
 around its flight's events (`Speech.span`), and Part 3 gives its drive more time wherever a line
 would overrun its caption (`Speech.stretch`), so the car keeps driving while the line is said.
@@ -284,6 +288,42 @@ particles stepped by Warp kernels from the recorded engine state (a plume that t
 pad where it hits, dust kicked up while the engine is low) and drawn by threepp as soft points
 in age bands. They are the only part of the picture that is not the simulation's state; they
 are checkpointed so any frame can be rendered on its own.
+
+**Part 6.** A Cornell box (a PointLight with a 25 cm radius under the ceiling, two blocks, a mirror
+sphere and a striped ball that rolls back and forth) rendered by `VulkanRenderer`, shown one lighting
+view at a time (`VulkanRenderer::setLightingView`, `lighting_view` in Python): the unshadowed direct
+light, one frame of shadow rays, the whole frame before and after spatial filtering, and the
+reflections. The renderer's temporal state makes every frame depend on the ones before it, so each
+shot is rendered while the film is made by a renderer process of its own (`--stream`): it steps at
+60 Hz from the shot's start, with the camera, the ball and the lamp where the film's clock puts them,
+and pipes its frames to the film. A still replays its shot from the start, so stills late in a shot
+take a while. The G-buffer panels, a probe snapshot and the GPU times come from one capture
+(`--capture`, cached in `lesson_out/light_a_frame_shots`; `LESSON_RECAPTURE=1` redoes it). Default
+settings apart from what a label says (probe cache off, TAA off). What is on screen:
+
+* a wipe puts two lighting views of the same frame side by side: two renderer processes, one scene,
+  one clock;
+* "one frame" is the frame right after `reset_temporal_history()`, which the shot calls every frame;
+* "averaged over time" is the pixel histories and TAA together (`final_temporal` with TAA on): the
+  histories alone take the grain on a flat wall down by about a fifth (a fresh pixel gets six bounce
+  rays, a settled one one), with TAA by two to three times;
+* the narration and the picture give no figures; the ones behind them are below;
+* the probe dots are one x-y slice (the middle z layer) of the renderer's own grid (`probe_grid()`),
+  each coloured by the irradiance its SH-L1 coefficients give towards the camera;
+* the light paths in the opening are traced in numpy against the same boxes and spheres, with
+  cosine-weighted bounces and mirror bounces off the metal sphere; the count that reached the lamp
+  is counted;
+* the GPU times are the renderer's own per-pass timestamps (`frame_timings`, medians of 90 frames)
+  at 1920x1080, with the GPU's throttle reasons under load printed beside them; the rays per pixel
+  are the counts the shaders are written with;
+* "the bounce light follows in under a second" was measured on the lit frame and on the bounce
+  light alone (the blue-to-red ratio of the back wall's lower left, frame by frame after the lamp
+  turns blue): half-way after 15 and 18 frames, 90 % after 42 and 44 frames, at 60 Hz.
+
+```
+[paths] 30 of 1000 paths from pixel (1040, 380) reached the lamp in <= 4 bounces
+[gpu] RTX 4060 Laptop GPU: G-buffer 0.33, ambient occlusion 0.55, probe cache 0.61, shade 4.91, denoise 5.99, TAA 0.62; total 13.16 ms (throttle reasons under load ['0x0000000000000004'], power limit [N/A])
+```
 
 **Warp × threepp.** The film's own program is threepp's `python/examples/warp_round_trip.py`. The film runs it in a
 subprocess (`--stream`) that steps its simulation at 60 Hz on the film's clock and pipes each

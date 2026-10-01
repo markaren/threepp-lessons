@@ -1,0 +1,56 @@
+{
+ "af_heart": {
+  "o1": {
+   "s": 7.15,
+   "said": "How three p p lights a frame: rasterized visibility, ray-traced light, and three ways to reuse a ray."
+  },
+  "p1": {
+   "s": 9.1,
+   "said": "A path tracer lights a pixel by following light backwards, bounce after bounce, until it hits a lamp. Most random paths never get there."
+  },
+  "p2": {
+   "s": 8.88,
+   "said": "So a clean image needs thousands of paths per pixel. three p p's Vulkan renderer spends a few, and reuses them. Here is how."
+  },
+  "g1": {
+   "s": 8.68,
+   "said": "What the camera sees is not traced at all. It is rasterized into a G buffer: every pixel's normal, colour, depth and object."
+  },
+  "d1": {
+   "s": 8.78,
+   "said": "Light straight from the lamp is summed exactly. Only the shadows need rays: a ray or two per pixel, aimed at random points on the lamp."
+  },
+  "b1": {
+   "s": 6.65,
+   "said": "Bounce light and reflections add a few more. One frame of all of it, with no reuse, boils like this."
+  },
+  "t1": {
+   "s": 9.53,
+   "said": "Reuse one: time. Each pixel averages its past frames, found through the motion vectors, so the image settles even while the camera moves."
+  },
+  "t2": {
+   "s": 6.03,
+   "said": "Where the ball uncovers the floor, there is no past to use, and the grain comes back behind it."
+  },
+  "s1": {
+   "s": 8.1,
+   "said": "Reuse two: neighbours. Each pixel is blended with nearby pixels on the same surface, reaching further with every pass."
+  },
+  "c1": {
+   "s": 8.68,
+   "said": "Reuse three: a cache. Thousands of probes hold the light that bounces around the room, and a slice of them is updated every frame."
+  },
+  "c2": {
+   "s": 3.85,
+   "said": "Change the lamp, and the bounce light follows in under a second."
+  },
+  "r1": {
+   "s": 5.45,
+   "said": "Shiny surfaces add one ray around the mirror direction, blurred more the rougher they are."
+  },
+  "k1": {
+   "s": 9.1,
+   "said": "All of it runs in real time on a laptop GPU. A few rays per pixel, and the rest borrowed: from the past, the neighbours and a cache."
+  }
+ }
+}
