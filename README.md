@@ -121,7 +121,7 @@ Every lesson film follows two rules:
 - **The title card is narrated**, so the film has sound from its first second. A caption
   given as `(start, end, text, False)` is spoken without being drawn over the title.
 
-`lesson.run` checks the captions against both rules and prints a `[house rules]` warning
+`lesson.run` checks the captions against both rules and prints a `[captions]` warning
 for each break: a caption with a digit in it, or no caption in the first two seconds.
 The picture is each lesson's own to check. The earlier parts were made before these rules.
 
@@ -424,6 +424,7 @@ In `threepp.lesson`:
 | `Narration`, `spoken`, `DEFAULT_WORDS` | captions read aloud by Kokoro and cached; caption text in words; the pronunciation table every lesson starts from |
 | `Speech`, `overruns` | a lesson's lines and their measured lengths, and the captions laid out from them (below); the one rule for a line that needs more time than its caption |
 | `turbo`, `write_png`, `write_srt`, `Film`, `FramePipe` | colour map, stdlib PNG writer, SubRip subtitles, and frames to H.264 via an ffmpeg pipe (written to a temp name and renamed on success); the pipe itself, which the film demos' `demo_common.Encoder` runs on too |
+| `run`, `write_gate`, `contact_sheet` | the command line every lesson shares (film, preview, one stretch, stills, contact sheet, `.srt`, narration with holds, `--remeasure`, `--gate`), with a `warn=` hook for a house's caption rules; the regression record `--gate` writes; frames tiled into a sheet |
 
 In `lesson.py`, the house layer:
 
@@ -434,7 +435,7 @@ In `lesson.py`, the house layer:
 | `card`, `code_card` | the house card, and a card of code that types itself in, with the program's output under it |
 | `THREEPP`, `threepp_file` | the threepp checkout the films run against (`THREEPP_ROOT`, else `../threepp`), and a file in it |
 | `data_file` | a threepp_data file from `THREEPP_DATA_DIR`, a checkout next to threepp's, or the build directories |
-| `run` | the shared command line: film, preview, one stretch, stills, contact sheet, `.srt` captions, narration, `--remeasure`, `--gate` |
+| `run` | the package's `run` with the captions checked against the house rules first |
 | `house_rule_warnings` | the house rules below, checked by `run` |
 
 ### Speech
