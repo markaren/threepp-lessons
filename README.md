@@ -429,7 +429,7 @@ In `lesson.py`, the house layer:
 
 | | |
 |---|---|
-| `Stage` | the package's Stage with the lessons' defaults: GL, and `env` a file name in threepp_data/textures/env (the studio HDR unless told otherwise) |
+| `Stage` | the package's Stage with the lessons' defaults: GL, `env` a file name in threepp_data/textures/env (the studio HDR unless told otherwise), and the films' 1920x1080 design space at any render size |
 | `Hud.title_card`, `summary` | the opening title, and the closing "IN SHORT" card with the repo link |
 | `card`, `code_card` | the house card, and a card of code that types itself in, with the program's output under it |
 | `THREEPP`, `threepp_file` | the threepp checkout the films run against (`THREEPP_ROOT`, else `../threepp`), and a file in it |

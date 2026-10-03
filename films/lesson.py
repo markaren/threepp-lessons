@@ -6,8 +6,9 @@ The toolkit itself (Timeline, Stage, Hud, Film, Narration, Speech, ...) is the e
 and run alike:
 
 `Stage`
-    threepp.lesson.Stage with the lessons' defaults: GL, and `env` a file name in
-    threepp_data/textures/env (the studio HDR unless told otherwise), found by `data_file`.
+    threepp.lesson.Stage with the lessons' defaults: GL, `env` a file name in
+    threepp_data/textures/env (the studio HDR unless told otherwise), found by `data_file`,
+    and the films' 1920x1080 design space at any render size.
 
 `Hud`
     threepp.lesson.Hud plus the house cards: `title_card` (the opening title) and `summary`
@@ -108,11 +109,13 @@ def data_file(*parts):
 
 # ── the house stage and cards ─────────────────────────────────────────────────
 class Stage(_Stage):
-    """threepp.lesson.Stage with the lessons' defaults: GL, and `env` a file name in
-    threepp_data/textures/env, found by `data_file`. A missing one is reported and the stage
-    renders without image-based lighting."""
+    """threepp.lesson.Stage with the lessons' defaults: GL, `env` a file name in
+    threepp_data/textures/env, found by `data_file`, and the films' 1920x1080 design space
+    whatever the render size (their Hud is built at that size). A missing HDR is reported and
+    the stage renders without image-based lighting."""
 
-    def __init__(self, width=1920, height=1080, renderer="gl", env="empty_warehouse_01_2k.hdr", **kw):
+    def __init__(self, width=1920, height=1080, renderer="gl", env="empty_warehouse_01_2k.hdr",
+                 design=(1920, 1080), **kw):
         if renderer != "gl":
             raise ValueError(f"the lessons render with GL, not {renderer!r}")
         path = None
@@ -121,7 +124,7 @@ class Stage(_Stage):
                 path = data_file("textures", "env", env)
             except FileNotFoundError as e:
                 print(f"[stage] rendering without image-based lighting: {e}", file=sys.stderr)
-        super().__init__(width, height, env=path, **kw)
+        super().__init__(width, height, env=path, design=design, **kw)
 
 
 class Hud(_Hud):
