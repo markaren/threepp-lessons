@@ -23,3 +23,6 @@ endif ()
 
 # the Snake program built in "Part 0c: threepp is the view"
 add_subdirectory(snake)
+
+# the code shown in "Polymorphism: one call, many types"
+add_subdirectory(polymorphism)

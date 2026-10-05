@@ -3,7 +3,7 @@
 Teaching films made with [threepp](https://github.com/markaren/threepp), the C++ port of
 three.js, drawn entirely by threepp and narrated offline. They used to live in threepp's own
 repository (`python/examples/lesson`); this repository holds the films, the C++ programs they
-show, and the tools that check them. Eleven films so far:
+show, and the tools that check them. Twelve films so far:
 
 | | |
 |---|---|
@@ -11,6 +11,7 @@ show, and the tools that check them. Eleven films so far:
 | `first_app.py` | Part 0b, *Your first real app:* hello.cpp grows into an app in eight steps (194 s) |
 | `snake_oo.py` | Part 0c, *threepp is the view:* Snake, written three times, for complete beginners: all in main(), inheriting a Group, and the rules on their own (228 s) |
 | `snake_oo.py --part d` | Part 0d, *Who plays?* Snake, part two: players behind an interface, events, and a second game (142 s) |
+| `polymorphism_rules.py` | *Polymorphism:* one call, many types, and two rules for using it well: the Liskov substitution principle, and composition before inheritance (201 s) |
 | `ik_fr3.py` | Part 1, *What does inverse kinematics actually solve?* (108 s, Franka FR3) |
 | `depth_map.py` | Part 2, *How a robot sees in 3D: from depth pixels to a map* (103 s) |
 | `imu_tilt.py` | Part 3, *Which way is up? How a robot measures its own tilt* (136 s, Range Rover on a PhysX track) |
@@ -24,7 +25,7 @@ show, and the tools that check them. Eleven films so far:
 | | |
 |---|---|
 | `films/` | the films (`python films/ik_fr3.py`), `lesson.py` (the house layer on top of `threepp.lesson`), and each film's measured narration (`*.speech.json`) and typeset equations (`*.math.json`) |
-| `programs/` | the C++ programs the films show and run: Part 0b's `app.cpp` and Part 0c/0d's `snake/`, with `capture.hpp` for their headless capture builds |
+| `programs/` | the C++ programs the films show and run: Part 0b's `app.cpp` and Part 0c/0d's `snake/`, with `capture.hpp` for their headless capture builds, and `polymorphism/`, the code the polymorphism film reads |
 | `tools/lesson_gate.py` | the regression gate: does a change alter a film? (captions, spoken lines and holds must match exactly, frames within a null of two runs) |
 
 The films need threepp's Python module, and a few need files from threepp's repository
@@ -64,7 +65,7 @@ python films/ik_fr3.py --no-voice                            # a silent film
 python films/threepp_intro.py --remeasure                    # measure the narration again (lessons paced by it)
 ```
 
-`threepp_intro.py`, `first_app.py`, `snake_oo.py`, `depth_map.py`, `imu_tilt.py`, `rocket_pid.py`, `light_a_frame.py`, `warp_threepp.py` and `sockets.py` take the same flags. Output goes to `lesson_out/` in the current
+`threepp_intro.py`, `first_app.py`, `snake_oo.py`, `polymorphism_rules.py`, `depth_map.py`, `imu_tilt.py`, `rocket_pid.py`, `light_a_frame.py`, `warp_threepp.py` and `sockets.py` take the same flags. Output goes to `lesson_out/` in the current
 directory unless `--out` / `--outdir` say otherwise.
 
 Needs threepp (GL renderer only, no Vulkan), numpy, threepp_data (for the FR3
@@ -263,6 +264,33 @@ tangle and the trap are compared frame by frame before the film shows "same fram
 
 `test_snake` also plays a whole seeded AI game on a 10 x 10 board (score 30, the same under MSVC
 and g++). Part 0c needs the `lesson_snake_*` capture targets and `test_snake` built.
+
+**Polymorphism** (`polymorphism_rules.py`). For students who have just met inheritance and virtual
+functions: one `add` and one loop that work for every type in a scene, then two rules. The first is
+the Liskov substitution principle, on the usual `Square` that inherits from `Rectangle`. The second
+is composition: a `Thermostat` that holds its sensor instead of inheriting from it, and threepp's
+own `Mesh`, which is an `Object3D` and has a geometry and a material. The code on screen is read out
+of `programs/polymorphism/` between `// [name]` markers, and its three programs are CMake targets
+(`lesson_polymorphism_scene`, `lesson_polymorphism_liskov`, `lesson_polymorphism_thermostat`).
+`liskov.cpp` and `thermostat.cpp` print the same under MSVC and g++; `scene.cpp` is built and run
+with MSVC, and compiles with g++ against threepp's 2026-09-28 headers. What is on screen:
+
+* the three objects are a `tp.Mesh`, a `tp.PointLight` and a `tp.Group` under one parent, and the
+  names the loop prints are those children's class names, the three lines `lesson_polymorphism_scene`
+  prints (the lamp's glowing ball is a child of the light, there so the light can be seen);
+* the plates are sized by a Python `Rectangle` and `Square` that do what `liskov.cpp`'s do, call for
+  call, and they end at the sizes that program prints;
+* the one mesh changes through `Mesh.set_geometry` and `Mesh.set_material`, and the wall of meshes
+  shares one geometry per column and one material per row;
+* the two `type()` declarations are threepp's headers without their `[[nodiscard]]`, and
+  `thermostat.cpp` built with `-DLEAK` is the call the member version does not allow.
+
+```
+[types] the children of the scene: Mesh, PointLight, Group
+[resize] Rectangle: asked for 2 x 0.5, got 2 x 0.5
+[resize] Square: asked for 2 x 0.5, got 0.5 x 0.5
+[wall] 12 meshes from 4 geometries and 3 materials
+```
 
 **Part 4.** A 6 t, 12 m hopper is a PhysX convex body. Its engine pushes along the body
 (`RigidBody.add_force_at_pos` at the nozzle) with up to 1.5 times its weight, no lower than

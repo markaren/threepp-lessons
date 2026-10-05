@@ -1,0 +1,104 @@
+{
+ "af_heart": {
+  "o1": {
+   "s": 5.05,
+   "said": "Polymorphism: one call, many types. And two rules for using it well."
+  },
+  "a1": {
+   "s": 6.55,
+   "said": "In three p p, a box, a lamp and a whole group of parts all enter the scene through the same function."
+  },
+  "a2": {
+   "s": 3.73,
+   "said": "It takes a pointer to an Object3D, the base class."
+  },
+  "a3": {
+   "s": 5.6,
+   "said": "A mesh is an Object3D. So is a light, and so is a group. That is inheritance."
+  },
+  "v1": {
+   "s": 6.35,
+   "said": "Now a loop asks every child the same question: what type are you? The loop only knows the base class."
+  },
+  "v2": {
+   "s": 4.0,
+   "said": "But type is a virtual function, and each class overrides it."
+  },
+  "v3": {
+   "s": 4.95,
+   "said": "So the object's own type decides which one runs, while the program is running."
+  },
+  "v4": {
+   "s": 8.07,
+   "said": "That is polymorphism. Code written for the base class works with every class derived from it, even one that is written later."
+  },
+  "l1": {
+   "s": 7.53,
+   "said": "But inheriting is also a promise. Wherever code expects the base class, your class must work, without surprises."
+  },
+  "l2": {
+   "s": 5.28,
+   "said": "Here is the classic trap. This function sets a rectangle's width, then its height."
+  },
+  "l3": {
+   "s": 2.95,
+   "said": "It trusts that one does not change the other."
+  },
+  "l4": {
+   "s": 6.7,
+   "said": "In maths, a square is a rectangle. So let Square inherit, and keep its own rule: the sides stay equal."
+  },
+  "l5": {
+   "s": 3.12,
+   "said": "Now hand the function a square. It compiles."
+  },
+  "l6": {
+   "s": 4.7,
+   "said": "But setting the height also changed the width, and the caller gets the wrong shape."
+  },
+  "l7": {
+   "s": 4.62,
+   "said": "The compiler checks that the functions exist. It cannot check the promise."
+  },
+  "l8": {
+   "s": 6.85,
+   "said": "This is the Liskov substitution principle: a derived object must be able to stand in for its base."
+  },
+  "l9": {
+   "s": 8.93,
+   "said": "A derived class keeps the promise when it accepts what the base accepts, does what the base's function is meant to do, and keeps what the base guarantees."
+  },
+  "l10": {
+   "s": 7.88,
+   "said": "The fix is not a smarter square. Square and Rectangle are siblings: both are shapes, and neither stands in for the other."
+  },
+  "c1": {
+   "s": 5.53,
+   "said": "So ask before you inherit: can my class honestly stand in for the base, everywhere?"
+  },
+  "c2": {
+   "s": 5.88,
+   "said": "If not, or if you only want to use what another class can do, hold it as a member instead."
+  },
+  "c3": {
+   "s": 10.85,
+   "said": "A thermostat uses a temperature sensor. It is not one. Inherit, and the sensor's functions become the thermostat's too. As a member, the sensor stays private."
+  },
+  "c4": {
+   "s": 9.57,
+   "said": "That is composition: has a, not is a. three p p does it too. A mesh is an Object3D, but it has a geometry, and it has a material."
+  },
+  "c5": {
+   "s": 5.53,
+   "said": "So any shape goes with any material, and you can swap either one while the program runs."
+  },
+  "c6": {
+   "s": 4.33,
+   "said": "With inheritance, every combination would need a class of its own."
+  },
+  "k1": {
+   "s": 8.8,
+   "said": "Polymorphism gives one call many types. Inherit when your class can stand in for its base. When you only want to reuse, compose."
+  }
+ }
+}
