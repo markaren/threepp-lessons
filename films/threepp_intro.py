@@ -48,7 +48,9 @@ from lesson import (DIM, TEXT, Arrow3D, Hud, Keys, Marker3D, OrbitCamera, Cloud,
 from lesson import card, code_card  # noqa: E402  (the house widgets)
 
 FPS = 60
-SCREENSHOTS = lesson.threepp_file("doc", "screenshots")     # the gallery is threepp's own
+# The gallery's stills, kept with the film: they were threepp's doc/screenshots when the film
+# was made, and that folder follows threepp's README, which has since dropped most of them.
+SCREENSHOTS = os.path.join(_HERE, "gallery")
 
 C_ACCENT = 0x4cc9f0
 C_WARM = 0xffb347
@@ -498,6 +500,8 @@ class Painter:
         self.textures = []
         for f, _ in GALLERY:
             tex = tp.TextureLoader().load(os.path.join(SCREENSHOTS, f))
+            if tex is None:
+                raise FileNotFoundError(f"gallery still {os.path.join(SCREENSHOTS, f)} did not load")
             tex.color_space = tp.ColorSpace.SRGB
             self.textures.append(tex)
         self._cropped = [False] * len(GALLERY)

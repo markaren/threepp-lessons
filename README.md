@@ -29,7 +29,7 @@ show, and the tools that check them. Twelve films so far:
 | `tools/lesson_gate.py` | the regression gate: does a change alter a film? (captions, spoken lines and holds must match exactly, frames within a null of two runs) |
 
 The films need threepp's Python module, and a few need files from threepp's repository
-(Part 0's gallery screenshots, the Warp film's `warp_round_trip.py`). Clone threepp next to
+(the Warp film's `warp_round_trip.py`). Clone threepp next to
 this repository (`../threepp`) or point `THREEPP_ROOT` at a checkout; its `python/` goes first
 on `sys.path`, so a module built in that checkout is the one the films use. Without a
 checkout, the films import the installed `threepp` (`pip install "threepp[lesson]"`), and
@@ -75,7 +75,7 @@ standard library. The equations are typeset by matplotlib once and cached in
 `<lesson>.math.json`, so matplotlib is only needed when you add or edit one.
 Part 3 also needs the PhysX backend (`tp.HAS_PHYSX`) and the Evoque glTF from
 threepp_data, and a threepp module built after `PhysxVehicle.associate` was added.
-Part 0 needs the PhysX backend too, and the screenshots in threepp's `doc/screenshots`.
+Part 0 needs the PhysX backend too; its gallery stills are in `films/gallery`.
 Part 4 needs the PhysX backend, a threepp module with `RigidBody.add_force_at_pos`, and
 NVIDIA Warp on a CUDA GPU for the exhaust, smoke and dust.
 Part 6 needs the Vulkan backend (`tp.HAS_VULKAN`) and a GPU with `VK_KHR_ray_query`, and a threepp
@@ -185,7 +185,8 @@ step (canvas and renderer, scene, camera, mesh as geometry plus material, light,
 loop), followed by its Python twin, shared ownership, the scene graph, materials and
 lights, an FR3 from URDF driven by `IkSolver`, PhysX boxes, a `DepthSensor`, and a
 `CMakeLists.txt` that fetches threepp. The Vulkan renderer appears only as screenshots
-from threepp's `doc/screenshots`, labelled as such. What is on screen was checked:
+(`films/gallery`, threepp's own `doc/screenshots` when the film was made), labelled as such.
+What is on screen was checked:
 
 * every C++ snippet compiles against the headers; the ownership beat's `use_count()`
   values (9 and 9 after the loop, 1 and 1 after `row->clear()`, 0 after
