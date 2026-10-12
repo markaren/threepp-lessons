@@ -1,0 +1,68 @@
+{
+ "af_heart": {
+  "title": {
+   "s": 3.67,
+   "said": "Throw, and catch. Exceptions, in C plus plus."
+  },
+  "a0": {
+   "s": 7.92,
+   "said": "A tank, a level sensor, and a pump. Every cycle, the program reads the level and decides whether the pump should run."
+  },
+  "a1": {
+   "s": 8.72,
+   "said": "Inside, the program is a stack of calls: main runs a cycle, the cycle reads the level, and that means parsing the sensor's text."
+  },
+  "a2": {
+   "s": 8.03,
+   "said": "Most days the sensor sends a number. It is handed back down, floor by floor. The tank is full enough, so the pump stays off."
+  },
+  "a3": {
+   "s": 4.33,
+   "said": "But one day the sensor sends text. There is no number to hand back."
+  },
+  "b1": {
+   "s": 6.85,
+   "said": "The old answer is a special value. Minus one, say. And every floor on the way down has to check for it."
+  },
+  "b2": {
+   "s": 6.8,
+   "said": "One floor forgets, and the error walks through, dressed as a number. The pump starts, and the tank overflows."
+  },
+  "c1": {
+   "s": 4.9,
+   "said": "C plus plus has another way. The function that finds the problem throws."
+  },
+  "c2": {
+   "s": 4.45,
+   "said": "Nothing is returned. The call is abandoned, and its floor is gone."
+  },
+  "c3": {
+   "s": 7.6,
+   "said": "The exception falls, and every floor it passes goes the same way, unless that floor catches it. This is unwinding."
+  },
+  "c4": {
+   "s": 7.03,
+   "said": "As each floor goes, its local objects are destroyed. The destructors run, just as on a normal return."
+  },
+  "d1": {
+   "s": 4.6,
+   "said": "In main, a try block is waiting, with a catch for this type of exception."
+  },
+  "d2": {
+   "s": 5.92,
+   "said": "The error lands there, with its message intact. The pump stays off, and the program goes on."
+  },
+  "e1": {
+   "s": 7.0,
+   "said": "And if nobody catches it? The exception falls through main as well, and the program is terminated on the spot."
+  },
+  "e2": {
+   "s": 6.88,
+   "said": "Nothing was closed: the destructors never ran. So catch the exception where something can be done about it."
+  },
+  "z1": {
+   "s": 7.6,
+   "said": "Throw where the problem is found. Catch where it can be handled. The floors in between fall away, and clean up as they go."
+  }
+ }
+}

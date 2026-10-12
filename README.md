@@ -3,7 +3,7 @@
 Teaching films made with [threepp](https://github.com/markaren/threepp), the C++ port of
 three.js, drawn entirely by threepp and narrated offline. They used to live in threepp's own
 repository (`python/examples/lesson`); this repository holds the films, the C++ programs they
-show, and the tools that check them. Twelve films so far:
+show, and the tools that check them. Thirteen films so far:
 
 | | |
 |---|---|
@@ -19,6 +19,7 @@ show, and the tools that check them. Twelve films so far:
 | `light_a_frame.py` | Part 6, *How threepp lights a frame:* the Vulkan renderer's hybrid lighting, one lighting view at a time (134 s; Vulkan with ray queries) |
 | `warp_threepp.py` | *Warp × threepp:* GPU simulation in Python, sharing its buffers with the renderer (about a minute; Vulkan, CUDA) |
 | `sockets.py` | AIS2203 lecture film, *Sockets: how programs on different machines talk to each other* (295 s, real packets from a Linux lab) |
+| `exceptions.py` | AIS1003 lecture film, *Throw, and catch:* a tank, its level sensor and a pump, and the program that reads them as a tower of floors that unwind (130 s; the terminal shows `programs/exceptions.cpp` in its three runs) |
 
 ## Layout and setup
 
@@ -65,7 +66,7 @@ python films/ik_fr3.py --no-voice                            # a silent film
 python films/threepp_intro.py --remeasure                    # measure the narration again (lessons paced by it)
 ```
 
-`threepp_intro.py`, `first_app.py`, `snake_oo.py`, `polymorphism_rules.py`, `depth_map.py`, `imu_tilt.py`, `rocket_pid.py`, `light_a_frame.py`, `warp_threepp.py` and `sockets.py` take the same flags. Output goes to `lesson_out/` in the current
+`threepp_intro.py`, `first_app.py`, `snake_oo.py`, `polymorphism_rules.py`, `depth_map.py`, `imu_tilt.py`, `rocket_pid.py`, `light_a_frame.py`, `warp_threepp.py`, `sockets.py` and `exceptions.py` take the same flags. Output goes to `lesson_out/` in the current
 directory unless `--out` / `--outdir` say otherwise.
 
 Needs threepp (GL renderer only, no Vulkan), numpy, threepp_data (for the FR3

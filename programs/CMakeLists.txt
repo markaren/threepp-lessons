@@ -26,3 +26,6 @@ add_subdirectory(snake)
 
 # the code shown in "Polymorphism: one call, many types"
 add_subdirectory(polymorphism)
+
+# the console program behind "Throw, and catch" (films/exceptions.py)
+lesson_program(lesson_exceptions SOURCES exceptions.cpp)
