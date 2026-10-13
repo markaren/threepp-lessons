@@ -1,0 +1,56 @@
+{
+ "af_heart": {
+  "title": {
+   "s": 5.65,
+   "said": "Coupling and cohesion. Why some programs are easy to change, and others fight back."
+  },
+  "a0": {
+   "s": 8.1,
+   "said": "A level crossing. A sensor spots the train, a controller decides, the gate comes down, and the lights flash. Four jobs."
+  },
+  "a1": {
+   "s": 8.6,
+   "said": "This program runs it. Here it is, taken apart: its classes, their functions, and the data they keep. Each colour is one of the jobs."
+  },
+  "a2": {
+   "s": 11.32,
+   "said": "Look at one function. It reads the sensor, decides, moves the gate, and switches the lights. Cohesion is how well the things in one class belong together. Here, it is low."
+  },
+  "a3": {
+   "s": 10.22,
+   "said": "Now the threads. Each one is a function reaching into the data of another class. Coupling is how much one class has to know about another. Here, it is high."
+  },
+  "b1": {
+   "s": 5.88,
+   "said": "The program works. Then the sensor is replaced by another model, which keeps different data."
+  },
+  "b2": {
+   "s": 6.78,
+   "said": "Every function that reached for the old data is left holding nothing. The build breaks, in every other class."
+  },
+  "d1": {
+   "s": 8.75,
+   "said": "So, tidy up. First: one job, one class. Each piece moves to where its job is done, and the deciding gets a class of its own."
+  },
+  "d2": {
+   "s": 7.5,
+   "said": "Second: the data goes under glass. It is private, and each class offers a few functions instead: its interface."
+  },
+  "d3": {
+   "s": 5.95,
+   "said": "Now the controller is the only class that knows the others, and all it knows is those functions."
+  },
+  "e1": {
+   "s": 7.55,
+   "said": "Replace the sensor again. The old one lifts out, the new one drops in, and it answers the same question as before."
+  },
+  "e2": {
+   "s": 4.42,
+   "said": "Nothing else had to change. The program builds, and the crossing works."
+  },
+  "z1": {
+   "s": 8.93,
+   "said": "High cohesion: each class does one job. Low coupling: classes meet only at a small interface. Then a change stays where it is made."
+  }
+ }
+}

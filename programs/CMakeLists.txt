@@ -29,3 +29,6 @@ add_subdirectory(polymorphism)
 
 # the console program behind "Throw, and catch" (films/exceptions.py)
 lesson_program(lesson_exceptions SOURCES exceptions.cpp)
+
+# the level crossing, written twice, that "Coupling and cohesion" takes apart (films/coupling_cohesion.py)
+add_subdirectory(coupling)

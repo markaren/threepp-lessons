@@ -3,7 +3,7 @@
 Teaching films made with [threepp](https://github.com/markaren/threepp), the C++ port of
 three.js, drawn entirely by threepp and narrated offline. They used to live in threepp's own
 repository (`python/examples/lesson`); this repository holds the films, the C++ programs they
-show, and the tools that check them. Thirteen films so far:
+show, and the tools that check them. Fourteen films so far:
 
 | | |
 |---|---|
@@ -20,13 +20,14 @@ show, and the tools that check them. Thirteen films so far:
 | `warp_threepp.py` | *Warp × threepp:* GPU simulation in Python, sharing its buffers with the renderer (about a minute; Vulkan, CUDA) |
 | `sockets.py` | AIS2203 lecture film, *Sockets: how programs on different machines talk to each other* (295 s, real packets from a Linux lab) |
 | `exceptions.py` | AIS1003 lecture film, *Throw, and catch:* a tank, its level sensor and a pump, and the program that reads them as a tower of floors that unwind (130 s; the terminal shows `programs/exceptions.cpp` in its three runs) |
+| `coupling_cohesion.py` | AIS1003 lecture film, *Coupling and cohesion:* a level crossing and the program that runs it, taken apart into crates of functions and data; the sensor is replaced in a tangled version and in a tidy one (124 s; the programs are `programs/coupling/tangled.cpp` and `tidy.cpp`) |
 
 ## Layout and setup
 
 | | |
 |---|---|
 | `films/` | the films (`python films/ik_fr3.py`), `lesson.py` (the house layer on top of `threepp.lesson`), and each film's measured narration (`*.speech.json`) and typeset equations (`*.math.json`) |
-| `programs/` | the C++ programs the films show and run: Part 0b's `app.cpp` and Part 0c/0d's `snake/`, with `capture.hpp` for their headless capture builds, and `polymorphism/`, the code the polymorphism film reads |
+| `programs/` | the C++ programs the films show and run: Part 0b's `app.cpp` and Part 0c/0d's `snake/`, with `capture.hpp` for their headless capture builds, `polymorphism/`, the code the polymorphism film reads, and `coupling/`, the two programs the coupling film takes apart |
 | `tools/lesson_gate.py` | the regression gate: does a change alter a film? (captions, spoken lines and holds must match exactly, frames within a null of two runs) |
 
 The films need threepp's Python module, and a few need files from threepp's repository
@@ -66,7 +67,7 @@ python films/ik_fr3.py --no-voice                            # a silent film
 python films/threepp_intro.py --remeasure                    # measure the narration again (lessons paced by it)
 ```
 
-`threepp_intro.py`, `first_app.py`, `snake_oo.py`, `polymorphism_rules.py`, `depth_map.py`, `imu_tilt.py`, `rocket_pid.py`, `light_a_frame.py`, `warp_threepp.py`, `sockets.py` and `exceptions.py` take the same flags. Output goes to `lesson_out/` in the current
+`threepp_intro.py`, `first_app.py`, `snake_oo.py`, `polymorphism_rules.py`, `depth_map.py`, `imu_tilt.py`, `rocket_pid.py`, `light_a_frame.py`, `warp_threepp.py`, `sockets.py`, `exceptions.py` and `coupling_cohesion.py` take the same flags. Output goes to `lesson_out/` in the current
 directory unless `--out` / `--outdir` say otherwise.
 
 Needs threepp (GL renderer only, no Vulkan), numpy, threepp_data (for the FR3
@@ -292,6 +293,40 @@ with MSVC, and compiles with g++ against threepp's 2026-09-28 headers. What is o
 [resize] Rectangle: asked for 2 x 0.5, got 2 x 0.5
 [resize] Square: asked for 2 x 0.5, got 0.5 x 0.5
 [wall] 12 meshes from 4 geometries and 3 materials
+```
+
+**Coupling and cohesion** (`coupling_cohesion.py`). An AIS1003 lecture film. One level crossing (a sensor, a
+controller, a gate, the lights) and the program that runs it, written twice in `programs/coupling/`. In `tangled.cpp`
+three classes keep public data, each member function does several jobs, and the functions name each other's data. In
+`tidy.cpp` each class does one job and keeps its data private, and a `Controller` is the only class that calls the
+others. Both are console programs with no threepp in them. The picture is the program taken apart: a crate per class,
+a slab per member function, a drum per data member, a thread from a function to each thing it uses, and a colour per
+job (sensing, deciding, the gate, the lights). The sensor is then replaced in both programs (`NEW_SENSOR`: a radar that
+keeps a distance makes way for a rail contact that keeps a flag). What is on screen:
+
+* the crates, slabs, drums and threads are read out of the two sources by the film (`Program`): a thread wherever a
+  function's body names a data member or calls a member function. `main()` is not drawn; in both programs it names no
+  data, which the film checks;
+* a slab's colours follow one rule: the job of each data member the function names, and green where it has an `if`.
+  Which tidy function each stripe of a tangled function flies to (`SPLIT`) is the film's own reading; the film checks
+  that every stripe lands on a tidy function of its own colour and that every tidy function receives one;
+* the functions that turn red are those whose lines still name the data member the new sensor no longer has, and
+  those lines are the lines of the compiler's errors. MSVC 14.44 (`error C2039: 'distance': is not a member of
+  'Sensor'`) and g++ 13.3 report the same two lines of `tangled.cpp`. The terminal shows MSVC's message without its
+  line number and error code, under the function the line is in;
+* the terminal's status lines are the programs' output: `lesson_coupling_tangled`, `lesson_coupling_tidy` and
+  `lesson_coupling_tidy_new_sensor` print the same sixteen lines, under MSVC and g++. When those builds are found
+  (`LESSON_APP_BIN`, or a `build*/bin` of this repository) the film runs them and compares, and with `cl`, `g++` or
+  `clang++` on the PATH it asks the compiler again which lines break. `lesson_coupling_tangled_new_sensor` is the
+  target that does not compile, and is left out of `all`;
+* the crossing's gate and lights follow `simulate`, a Python copy of `tidy.cpp`'s four classes, call for call, whose
+  printed lines are compared with the programs' own. One tick of the program is 0.7 s of film. The train, the radar
+  beam and the lit rails are the film's: the programs have no hardware.
+
+```
+[cohesion] jobs per function, tangled: Sensor::read 3, Gate::move 4, Lights::print 3; tidy: 1 in each of 9
+[coupling] tangled: 5 functions-into-foreign-data (read into Lights, move into Sensor and Lights, print into Sensor and Gate); tidy: 0, and 6 calls, all from Controller
+[new sensor] tangled.cpp no longer compiles in move and print (lines 70 and 82); tidy.cpp changes inside Sensor only
 ```
 
 **Part 4.** A 6 t, 12 m hopper is a PhysX convex body. Its engine pushes along the body
